@@ -7,11 +7,12 @@ import (
 
 	"L0/internal/db"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/segmentio/kafka-go"
 	"gorm.io/gorm"
 )
 
-func StartConsumer(dbConn *gorm.DB, topic string) {
+func StartConsumer(dbConn *gorm.DB, topic string, validator *validator.Validate) {
 	go func() {
 		reader := kafka.NewReader(kafka.ReaderConfig{
 			Brokers:        []string{"localhost:9092"},
@@ -32,6 +33,11 @@ func StartConsumer(dbConn *gorm.DB, topic string) {
 				log.Printf("Ошибка парсинга сообщения '%s' из Kafka", msg.Value)
 				continue
 			}
+
+			if err := validator.Struct(&order); err != nil {
+				log.Printf("Ошибка сохранения заказа %s в БД: %v", order.OrderUID, err)
+			}
+
 			existingOrder, err := db.GetOrderFromDBByID(dbConn, order.OrderUID)
 			if err != nil {
 				db.CreateOrder(dbConn, &order)

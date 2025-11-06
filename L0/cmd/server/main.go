@@ -1,23 +1,28 @@
 package main
 
 import (
-	"L0/internal/cache"
-	"L0/internal/config"
-	"L0/internal/db"
-	"L0/internal/kafka"
-
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"gorm.io/gorm"
+
+	"L0/internal/cache"
+	"L0/internal/config"
+	"L0/internal/db"
+	"L0/internal/kafka"
 )
+
+var validate *validator.Validate
 
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Print(".env файл не найден.")
 	}
+
+	validate = validator.New()
 }
 
 // Основная логика по поиску заказа
@@ -61,7 +66,7 @@ func main() {
 	// Иницилизация мапы, подключения к БД и консьюмера
 	cache.InitCache(dbConn)
 	db.InitDB(dbConn)
-	kafka.StartConsumer(dbConn, conf.KafkaTopic)
+	kafka.StartConsumer(dbConn, conf.KafkaTopic, validate)
 
 	router := gin.Default()
 	router.GET("/order/:id", getOrder(dbConn))

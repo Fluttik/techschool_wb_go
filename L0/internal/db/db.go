@@ -7,11 +7,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func ConnectToDB(db_url string) *gorm.DB {
+func ConnectToDB(dbURL string) *gorm.DB {
 	log.Println("URL:")
-	log.Println(db_url)
+	log.Println(dbURL)
 
-	db, err := gorm.Open(postgres.Open(db_url), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbURL), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Не удалось подключится к БД: %v", err)
 	}

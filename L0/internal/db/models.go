@@ -5,60 +5,60 @@ import (
 )
 
 type Order struct {
-	OrderUID          string    `json:"order_uid" gorm:"primaryKey"`
-	TrackNumber       string    `json:"track_number"`
-	Entry             string    `json:"entry"`
-	Locale            string    `json:"locale"`
+	OrderUID          string    `json:"order_uid" gorm:"primaryKey" validate:"required,min=1"`
+	TrackNumber       string    `json:"track_number" validate:"required,min=1"`
+	Entry             string    `json:"entry" validate:"required,min=1"`
+	Locale            string    `json:"locale" validate:"required,oneof=ru en ch"`
 	InternalSignature string    `json:"internal_signature"`
-	CustomerID        string    `json:"customer_id"`
-	DeliveryService   string    `json:"delivery_service"`
-	ShardKey          string    `json:"shardkey"`
-	SmID              int64     `json:"sm_id"`
-	DateCreated       time.Time `json:"date_created"`
-	OofShard          string    `json:"oof_shard"`
+	CustomerID        string    `json:"customer_id" validate:"required,min=1"`
+	DeliveryService   string    `json:"delivery_service" validate:"required,min=1"`
+	ShardKey          string    `json:"shardkey" validate:"required,min=1"`
+	SmID              int64     `json:"sm_id" validate:"required,gte=0"`
+	DateCreated       time.Time `json:"date_created" validate:"required"`
+	OofShard          string    `json:"oof_shard" validate:"required"`
 
-	Delivery Delivery `json:"delivery" gorm:"foreignKey:OrderUID;references:OrderUID"`
-	Payment  Payment  `json:"payment" gorm:"foreignKey:Transaction;references:OrderUID"`
-	Items    []Item   `json:"items" gorm:"foreignKey:OrderUID;references:OrderUID"`
+	Delivery Delivery `json:"delivery" gorm:"foreignKey:OrderUID;references:OrderUID" validate:"required"`
+	Payment  Payment  `json:"payment" gorm:"foreignKey:Transaction;references:OrderUID" validate:"required"`
+	Items    []Item   `json:"items" gorm:"foreignKey:OrderUID;references:OrderUID" validate:"required,min=1"`
 }
 
 type Delivery struct {
-	OrderUID string `json:"-" gorm:"primaryKey"`
-	Name     string `json:"name"`
-	Phone    string `json:"phone"`
-	Zip      string `json:"zip"`
-	City     string `json:"city"`
-	Address  string `json:"address"`
-	Region   string `json:"region"`
-	Email    string `json:"email"`
+	OrderUID string `json:"-" gorm:"primaryKey" validate:"required,min=1"`
+	Name     string `json:"name" validate:"required,min=1"`
+	Phone    string `json:"phone" validate:"required"`
+	Zip      string `json:"zip" validate:"required"`
+	City     string `json:"city" validate:"required"`
+	Address  string `json:"address" validate:"required"`
+	Region   string `json:"region" validate:"required"`
+	Email    string `json:"email" validate:"required"`
 }
 
 type Payment struct {
-	Transaction  string `json:"transaction" gorm:"primaryKey"`
+	Transaction  string `json:"transaction" gorm:"primaryKey" validate:"required"`
 	RequestID    string `json:"request_id"`
-	Currency     string `json:"currency"`
-	Provider     string `json:"provider"`
-	Amount       int64  `json:"amount"`
-	PaymentDT    int64  `json:"payment_dt"`
-	Bank         string `json:"bank"`
-	DeliveryCost int64  `json:"delivery_cost"`
-	GoodsTotal   int64  `json:"goods_total"`
-	CustomFee    int64  `json:"custom_fee"`
+	Currency     string `json:"currency" validate:"required,len=3"`
+	Provider     string `json:"provider" validate:"required"`
+	Amount       int64  `json:"amount" validate:"required,gte=0"`
+	PaymentDT    int64  `json:"payment_dt" validate:"required"`
+	Bank         string `json:"bank" validate:"required"`
+	DeliveryCost int64  `json:"delivery_cost" validate:"required,gte=0"`
+	GoodsTotal   int64  `json:"goods_total" validate:"required,gte=0"`
+	CustomFee    int64  `json:"custom_fee" validate:"required,gte=0"`
 
-	OrderUID string `json:"-" gorm:"index"`
+	OrderUID string `json:"-" gorm:"index" validate:"required"`
 }
 
 type Item struct {
-	ChrtID      int64  `json:"chrt_id" gorm:"primaryKey"`
-	OrderUID    string `json:"-" gorm:"index"`
-	TrackNumber string `json:"track_number"`
-	Price       int64  `json:"price"`
-	Rid         string `json:"rid"`
-	Name        string `json:"name"`
-	Sale        int64  `json:"sale"`
-	Size        string `json:"size"`
-	TotalPrice  int64  `json:"total_price"`
-	NmID        int64  `json:"nm_id"`
-	Brand       string `json:"brand"`
-	Status      int64  `json:"status"`
+	ChrtID      int64  `json:"chrt_id" gorm:"primaryKey" validate:"required"`
+	OrderUID    string `json:"-" gorm:"index" validate:"required"`
+	TrackNumber string `json:"track_number" validate:"required"`
+	Price       int64  `json:"price" validate:"required,gte=0"`
+	Rid         string `json:"rid" validate:"required"`
+	Name        string `json:"name" validate:"required"`
+	Sale        int64  `json:"sale" validate:"gte=0,lte=100"`
+	Size        string `json:"size" validate:"required,gte=0"`
+	TotalPrice  int64  `json:"total_price" validate:"required,gte=0"`
+	NmID        int64  `json:"nm_id" validate:"required,gte=0"`
+	Brand       string `json:"brand" validate:"required"`
+	Status      int64  `json:"status" validate:"required"`
 }
